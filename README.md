@@ -50,8 +50,6 @@ You are free to refactor the code or add tooling to support your investigationâ€
 
 - Unit tests for the `normalizeName()` function
 - Integration tests for the `/api/validate-users` endpoint
-- Test coverage: 72.91% statements, 66.66% functions
 
-For detailed information about the implementation approach, solution details, and metrics, see [IMPLEMENTATION.md](./IMPLEMENTATION.md).
 
 Good luck, and have fun tracing the bug!
