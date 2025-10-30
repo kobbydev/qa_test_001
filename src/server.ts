@@ -29,7 +29,7 @@ app.get(
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
 
 app.use(
@@ -37,7 +37,7 @@ app.use(
     error: unknown,
     _req: Request,
     res: ExpressResponse,
-    _next: NextFunction,
+    _next: NextFunction
   ) => {
     if (res.headersSent) {
       return;
@@ -49,14 +49,16 @@ app.use(
         : "Unexpected error while validating user names.";
 
     res.status(500).json({ error: message });
-  },
+  }
 );
 
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env.PORT ?? 3001);
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
 
 type RemoteResponse = {
   message?: string;
@@ -68,26 +70,38 @@ async function loadUsers(): Promise<string[]> {
   return JSON.parse(raw) as string[];
 }
 
+export function normalizeName(originalName: string): string {
+  // Normalize Unicode (NFC preserves composed characters) and replace apostrophe-like marks with ASCII '
+  const apostropheLike = /[\u2018\u2019\u201B\u02BC\u2032\u2035]/g; // ‘ ’ ‛ ʼ ′ ‵
+  const normalized = originalName
+    .normalize("NFC")
+    .replace(apostropheLike, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized;
+}
+
 async function validateUser(name: string): Promise<void> {
-  const url = `${VALIDATION_URL}?name=${encodeURIComponent(name)}`;
+  const sanitizedName = normalizeName(name);
+  const url = `${VALIDATION_URL}?name=${encodeURIComponent(sanitizedName)}`;
 
   let response: Response;
 
   try {
     response = await fetch(url);
   } catch (_error) {
-    console.error(`${name} - Failed to reach validation service.`);
+    console.error(`${sanitizedName} - Failed to reach validation service.`);
     process.exit(1);
   }
 
   const message = await extractMessage(response);
 
   if (response.status !== 200) {
-    console.error(`${name} - ${message}`);
+    console.error(`${sanitizedName} - ${message}`);
     process.exit(1);
   }
 
-  console.log(`${name} - ${message}`);
+  console.log(`${sanitizedName} - ${message}`);
 }
 
 async function extractMessage(response: Response): Promise<string> {
@@ -103,4 +117,4 @@ async function extractMessage(response: Response): Promise<string> {
   return `Received status ${response.status}`;
 }
 
-export {};
+export { app };

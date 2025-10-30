@@ -20,7 +20,7 @@ This repository reproduces a real customer issue that slipped past automated che
    ```
 3. Exercise the endpoint from another terminal:
    ```bash
-   curl http://localhost:3000/api/validate-users | jq
+   curl http://localhost:3001/api/validate-users | jq
    ```
 
 > Tip: `GET /health` returns a simple status payload if you just need to confirm the server is running.
@@ -39,5 +39,19 @@ This repository reproduces a real customer issue that slipped past automated che
 4. Fork this repository, commit your solution, and send the link to your fork to Emmanuel via WhatsApp by Thursday, Oct 30th at 11:59 PM GMT.
 
 You are free to refactor the code or add tooling to support your investigation—just keep the reproduction steps intact for the next engineer who picks this up. **Do not modify `data/users.json`; all fixes must live in the application code or supporting tests.**
+
+## Solution Status
+
+✅ **Issue Resolved**: The problem has been identified and fixed. The root cause was Unicode apostrophe characters in the user names that the external validation service was rejecting.
+
+✅ **Implementation Complete**: A `normalizeName()` function has been implemented to normalize names before validation, replacing curly apostrophes with ASCII apostrophes and handling whitespace normalization.
+
+✅ **Tests Added**: Comprehensive test coverage has been added with:
+
+- Unit tests for the `normalizeName()` function
+- Integration tests for the `/api/validate-users` endpoint
+- Test coverage: 72.91% statements, 66.66% functions
+
+For detailed information about the implementation approach, solution details, and metrics, see [IMPLEMENTATION.md](./IMPLEMENTATION.md).
 
 Good luck, and have fun tracing the bug!
